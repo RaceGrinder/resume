@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Basic Tetris HTML Game</title>
+  <meta charset="UTF-8">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      position: relative;
+      /* Removed the previous full-page white border */
+    }
+    body {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Testimonials container is behind everything */
+    .testimonials {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .testimonial {
+      position: absolute;
+      white-space: nowrap;
+      font-size: 20px;
+      opacity: 0.2;
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(110vh); }
+    }
+    /* Tetris play area container with a thin white border */
+    #play-area {
+      position: relative;
+      z-index: 2;
+      background: black;
+      padding: 10px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border: 1px solid white; /* Thin white border */
+    }
+    canvas {
+      border: 1px solid white;
+      background: black; /* Opaque play area */
+    }
+    #sidebar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-left: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    #score {
+      color: white;
+      font-family: monospace;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    #next {
+      color: white;
+      font-family: monospace;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    #next-canvas {
+      border: 1px solid white;
+      background: black;
+    }
+    /* Logo in the top left */
+    #logo {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 3;
+    }
+    #logo a {
+      text-decoration: none;
+      font-family: monospace;
+      font-size: 40px;
+      animation: cycleColors 10s infinite linear;
+    }
+    @keyframes cycleColors {
+      0% { color: cyan; }
+      14% { color: yellow; }
+      28% { color: purple; }
+      42% { color: green; }
+      56% { color: red; }
+      70% { color: blue; }
+      84% { color: orange; }
+      100% { color: cyan; }
+    }
+    /* Pause Button positioned in the top left (below the logo) */
+    #pause-button {
+      position: absolute;
+      top: 70px;
+      left: 15px;
+      z-index: 3;
+      background: black;
+      border: 1px solid white;
+      color: white;
+      font-family: monospace;
+      font-size: 16px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    /* Credits at the bottom center */
+    #credits {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-family: monospace;
+      font-size: 16px;
+      z-index: 3;
+    }
+    /* Game-over (restart) menu is centered */
+    #game-over-menu {
+      position: absolute;
+      top: 50%;
+      left: -100%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+      z-index: 3;
+    }
+    /* Pause overlay screen */
+    #pause-screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      padding: 20px;
+      border: 1px solid white;
+      border-radius: 10px;
+      text-align: center;
+      z-index: 4;
+      display: none;
+      font-family: monospace;
+      color: white;
+    }
+    #pause-screen button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Testimonials Background (z-index:1) -->
+<div class="testimonials" id="testimonials"></div>
+
+<!-- Logo -->
+<div id="logo">
+  <a href="../projects.html">tetris.my</a>
+</div>
+
+<!-- Pause Button -->
+<button id="pause-button">Pause</button>
+
+<iframe id="editor-frame" style="display: none;"></iframe>
+
+<!-- Tetris Play Area Container (z-index:2) -->
+<div id="play-area">
+  <canvas width="320" height="640" id="game"></canvas>
+  <div id="sidebar">
+    <div id="score">Score: </div>
+    <div id="next">Next Piece:</div>
+    <canvas width="160" height="160" id="next-canvas"></canvas>
+
+    <div id="game-over-menu">
+      <div id="logs" style="display: none;"></div>
+      <h2 style="color: white; font-family: monospace;">Game Over</h2>
+      <p style="color: white; font-family: monospace;">Enter your name to restart:</p>
+      <input type="text" id="player-name" placeholder="Your Name" style="
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        width: 80%;
+        text-align: center;
+      ">
+      <br>
+      <button id="restart-button" disabled style="
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: not-allowed;
+      ">Restart</button>
+    </div>
+
+    <div id="leaderboard">
+      <h3 style="color: white;">Leaderboard</h3>
+      <ul id="leaderboard-list" style="color: white;"></ul>
+    </div>
+  </div>
+</div>
+
+<!-- Pause Overlay Screen -->
+<div id="pause-screen">
+  <h2>Game Paused</h2>
+  <button id="resume-button">Resume</button>
+</div>
+
+<div id="credits">Made By Race Grinder</div>
+
+<script>
+const canvas = document.getElementById('game');
+const nextCanvas = document.getElementById('next-canvas');
+const context = canvas.getContext('2d');
+const nextContext = nextCanvas.getContext('2d');
+const GOOGLE_SCRIPT_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";
+const PROXY_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";  // Cloudflare CORS proxy
+const FULL_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";
+
+const grid = 32;
+let score = 0;
+let speed = 35; // Initial speed threshold; lower means faster drop.
+let count = 0;
+let rAF = null;
+let gameOver = false;
+let paused = false;
+
+const scoreDisplay = document.getElementById('score');
+const playfield = Array.from({ length: 20 }, () => Array(10).fill(0));
+
+const tetrominos = {
+  'I': [[0,0,0,0], [1,1,1,1], [0,0,0,0], [0,0,0,0]],
+  'J': [[1,0,0], [1,1,1], [0,0,0]],
+  'L': [[0,0,1], [1,1,1], [0,0,0]],
+  'O': [[1,1], [1,1]],
+  'S': [[0,1,1], [1,1,0], [0,0,0]],
+  'Z': [[1,1,0], [0,1,1], [0,0,0]],
+  'T': [[0,1,0], [1,1,1], [0,0,0]]
+};
+
+const colors = { 'I': 'cyan', 'O': 'yellow', 'T': 'purple', 'S': 'green', 'Z': 'red', 'J': 'blue', 'L': 'orange' };
+
+function updateLogoColor() {
+  const logoLink = document.querySelector('#logo a');
+  logoLink.style.color = colors[tetromino.name];
+}
+
+function fetchLeaderboard() {
+  fetch(GOOGLE_SCRIPT_URL, { method: "GET" })
+    .then(response => response.text())
+    .then(text => JSON.parse(text))
+    .then(data => {
+      if (!Array.isArray(data)) {
+        console.error("Error: Data is not an array", data);
+        return;
+      }
+      updateLeaderboard(data);
+    })
+    .catch(error => console.error("Error loading leaderboard:", error));
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  updateLeaderboard([
+    ["You are not connected to the internet.", 0],
+    ["The Database in not reachable.", 0]
+  ]);
+  fetchLeaderboard();
+});
+
+function updateLeaderboard(data) {
+  const leaderboardList = document.getElementById("leaderboard-list");
+  leaderboardList.innerHTML = "";
+  if (!data || data.length === 0) {
+    leaderboardList.innerHTML = "<li>No scores yet.</li>";
+    return;
+  }
+  data.sort((a, b) => b[1] - a[1]);
+  const topScores = data.slice(0, 10);
+  topScores.forEach((entry, index) => {
+    if (entry.length < 2) {
+      return;
+    }
+    let listItem = document.createElement("li");
+    listItem.textContent = `#${index + 1} ${entry[0]} - ${entry[1]} points`;
+    leaderboardList.appendChild(listItem);
+  });
+}
+
+function getNextTetromino() {
+  const keys = Object.keys(tetrominos);
+  const name = keys[Math.floor(Math.random() * keys.length)];
+  return { name, matrix: tetrominos[name], row: 0, col: 3 };
+}
+
+let tetromino = getNextTetromino();
+let nextTetromino = getNextTetromino();
+
+function isValidMove(matrix, row, col) {
+  return matrix.every((r, rIdx) => 
+    r.every((val, cIdx) => 
+      !val || (col + cIdx >= 0 && col + cIdx < 10 && row + rIdx < 20 && !playfield[row + rIdx][col + cIdx])
+    )
+  );
+}
+
+// Center the next tetromino in its canvas
+function drawNextPiece() {
+  nextContext.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+  nextContext.fillStyle = colors[nextTetromino.name];
+  let matrix = nextTetromino.matrix;
+  let rows = matrix.length;
+  let cols = matrix[0].length;
+  let offsetX = (nextCanvas.width - cols * grid) / 2;
+  let offsetY = (nextCanvas.height - rows * grid) / 2;
+  matrix.forEach((row, r) => {
+    row.forEach((val, c) => {
+      if (val) {
+        nextContext.fillRect(offsetX + c * grid, offsetY + r * grid, grid - 1, grid - 1);
+      }
+    });
+  });
+}
+
+function drawPlayfield() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  playfield.forEach((row, r) => row.forEach((cell, c) => { 
+    if (cell) { 
+      context.fillStyle = colors[cell]; 
+      context.fillRect(c * grid, r * grid, grid - 1, grid - 1); 
+    }
+  }));
+}
+
+function drawGhostPiece() {
+  let ghostRow = tetromino.row;
+  while (isValidMove(tetromino.matrix, ghostRow + 1, tetromino.col)) {
+    ghostRow++;
+  }
+  context.save();
+  context.globalAlpha = 0.3;
+  context.fillStyle = colors[tetromino.name];
+  tetromino.matrix.forEach((row, r) => {
+    row.forEach((val, c) => {
+      if (val) {
+        context.fillRect((tetromino.col + c) * grid, (ghostRow + r) * grid, grid - 1, grid - 1);
+      }
+    });
+  });
+  context.restore();
+}
+
+function drawTetromino() {
+  context.fillStyle = colors[tetromino.name];
+  tetromino.matrix.forEach((row, r) => {
+    row.forEach((val, c) => {
+      if (val) {
+        context.fillRect((tetromino.col + c) * grid, (tetromino.row + r) * grid, grid - 1, grid - 1);
+      }
+    });
+  });
+}
+
+function placeTetromino() {
+  for (let row = 0; row < tetromino.matrix.length; row++) {
+    for (let col = 0; col < tetromino.matrix[row].length; col++) {
+      if (tetromino.matrix[row][col]) {
+        if (tetromino.row + row === 0) {
+          return showGameOver();
+        }
+        playfield[tetromino.row + row][tetromino.col + col] = tetromino.name;
+      }
+    }
+  }
+  
+  // Check for full lines, remove them, and add an empty row at the top.
+  for (let row = playfield.length - 1; row >= 0; row--) {
+    if (playfield[row].every(cell => !!cell)) {
+      score += 15;
+      updateScoreDisplay();
+      speed = Math.max(5, 35 - Math.floor(score / 80));
+      playfield.splice(row, 1);             // Remove the full row
+      playfield.unshift(new Array(10).fill(0)); // Add an empty row at the top
+      row++; // Re-check current row index after shifting
+    }
+  }
+  
+  tetromino = nextTetromino;
+  nextTetromino = getNextTetromino();
+  drawNextPiece();
+}
+
+function updateScoreDisplay() {
+  const scoreDiv = document.getElementById('score');
+  scoreDiv.innerHTML = "Score: " + score;
+}
+
+function showGameOver() {
+  cancelAnimationFrame(rAF);
+  gameOver = true;
+  document.getElementById('game-over-menu').style.display = 'block';
+  const playerName = document.getElementById('player-name').value.trim();
+  if (playerName) {
+    saveLog(playerName, score);
+  }
+}
+
+function loop() {
+  if (gameOver || paused) return;
+  rAF = requestAnimationFrame(loop);
+  count++;
+  updateLogoColor();
+  if (count > speed) {
+    if (isValidMove(tetromino.matrix, tetromino.row + 1, tetromino.col)) {
+      tetromino.row++;
+    } else {
+      placeTetromino();
+    }
+    count = 0;
+  }
+  drawPlayfield();
+  drawGhostPiece();
+  drawTetromino();
+}
+
+function saveLog(playerName, score) {
+  if (!playerName || isNaN(score)) {
+    return;
+  }
+  const logEntry = { player: playerName, score: score };
+  fetch("https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec", {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(logEntry)
+  })
+  .catch(error => console.error("Error saving score:", error));
+}
+
+document.getElementById('restart-button').addEventListener('click', function() {
+  document.getElementById('game-over-menu').style.display = 'none';
+});
+
+function restartGame() {
+  if (!gameOver) return;
+  saveLog(document.getElementById('player-name').value.trim(), score);
+  gameOver = false;
+  score = 0;
+  updateScoreDisplay();
+  playfield.forEach(row => row.fill(0));
+  tetromino = getNextTetromino();
+  nextTetromino = getNextTetromino();
+  document.getElementById('game-over-menu').style.display = 'none';
+  document.getElementById('player-name').value = '';
+  rAF = requestAnimationFrame(loop);
+}
+
+document.getElementById('restart-button').addEventListener('click', restartGame);
+
+document.getElementById('player-name').addEventListener('input', function() {
+  const nameInput = document.getElementById('player-name').value.trim();
+  const restartButton = document.getElementById('restart-button');
+  if (nameInput.length > 0) {
+    restartButton.disabled = false;
+    restartButton.style.cursor = 'pointer';
+  } else {
+    restartButton.disabled = true;
+    restartButton.style.cursor = 'not-allowed';
+  }
+});
+
+// Modified keydown listener to support WASD keys along with arrow keys.
+document.addEventListener('keydown', function(e) {
+  if (gameOver || paused) return;
+  
+  let key = e.key;
+  // Map WASD (in both lower and upper case) to corresponding arrow keys.
+  if (key === 'w' || key === 'W') key = 'ArrowUp';
+  if (key === 'a' || key === 'A') key = 'ArrowLeft';
+  if (key === 's' || key === 'S') key = 'ArrowDown';
+  if (key === 'd' || key === 'D') key = 'ArrowRight';
+
+  if (key === ' ') {
+    while (isValidMove(tetromino.matrix, tetromino.row + 1, tetromino.col)) {
+      tetromino.row++;
+    }
+    placeTetromino();
+  }
+  if (key === 'ArrowLeft' && isValidMove(tetromino.matrix, tetromino.row, tetromino.col - 1)) {
+    tetromino.col--;
+  }
+  if (key === 'ArrowRight' && isValidMove(tetromino.matrix, tetromino.row, tetromino.col + 1)) {
+    tetromino.col++;
+  }
+  if (key === 'ArrowUp') {
+    const rotated = tetromino.matrix[0].map((_, index) => tetromino.matrix.map(row => row[index]).reverse());
+    if (isValidMove(rotated, tetromino.row, tetromino.col)) {
+      tetromino.matrix = rotated;
+    }
+  }
+  if (key === 'ArrowDown' && isValidMove(tetromino.matrix, tetromino.row + 1, tetromino.col)) {
+    tetromino.row++;
+  }
+});
+
+// Pause and Resume functions
+function pauseGame() {
+  if (paused) return;
+  paused = true;
+  cancelAnimationFrame(rAF);
+  document.getElementById('pause-screen').style.display = 'block';
+}
+function resumeGame() {
+  if (!paused) return;
+  paused = false;
+  document.getElementById('pause-screen').style.display = 'none';
+  rAF = requestAnimationFrame(loop);
+}
+
+document.getElementById('pause-button').addEventListener('click', pauseGame);
+document.getElementById('resume-button').addEventListener('click', resumeGame);
+
+// Start the game loop
+rAF = requestAnimationFrame(loop);
+
+/* ------------ Falling Testimonials Background ------------ */
+const testimonialsData = [
+  "Great job clearing that last line!",
+  "You're getting faster at this, nice reflexes.",
+  "That was a clean quad-line clear.",
+  "Solid strategy holding that I-piece.",
+  "Your stacking is looking really efficient.",
+  "Nice recovery from that close call.",
+  "You've got a good eye for open columns.",
+  "That combo was smooth.",
+  "Impressive reaction time on that drop.",
+  "You're really improving your piece placement.",
+  "Take a break whenever you're ready, no rush.",
+  "Good game — that score was solid.",
+  "Your rotations are getting cleaner.",
+  "Nice use of the hold strategy.",
+  "That was a well-planned board.",
+  "Remember to stretch if you've been playing a while."
+];
+const tetrisColors = ['cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'];
+const testimonialsContainer = document.getElementById('testimonials');
+
+// Limit to 16 testimonials
+const maxTestimonials = 16;
+testimonialsData.slice(0, maxTestimonials).forEach(text => {
+  const testimonial = document.createElement('div');
+  testimonial.className = 'testimonial';
+  testimonial.textContent = text;
+  // Random horizontal and vertical positions across the screen
+  testimonial.style.left = Math.random() * 100 + '%';
+  testimonial.style.top = Math.random() * 100 + '%';
+  // Random animation duration between 10 and 30 seconds
+  const duration = 10 + Math.random() * 20;
+  testimonial.style.animationDuration = duration + 's';
+  // Random animation delay so they start at different times
+  testimonial.style.animationDelay = -(Math.random() * duration) + 's';
+  // Random testimonial color from Tetris colors
+  testimonial.style.color = tetrisColors[Math.floor(Math.random() * tetrisColors.length)];
+  testimonialsContainer.appendChild(testimonial);
+});
+</script>
+</body>
+</html>
