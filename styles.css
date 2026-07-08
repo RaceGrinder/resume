@@ -394,15 +394,7 @@ section.block:not(:last-of-type)::after {
 }
 
 /* ---------- Cards (projects, highlights) ---------- */
-.card:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-    justify-self: center;
-    width: calc(50% - 12px);
-}
-
-.card {
-    flex: 0 1 calc(50% - 12px);
-}
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
 .card {
   position: relative;
