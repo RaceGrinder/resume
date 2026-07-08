@@ -32,11 +32,13 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background: var(--cream);
+  background-color: var(--cream);
+  background-image: radial-gradient(rgba(47, 74, 60, 0.045) 1px, transparent 1px);
+  background-size: 3px 3px;
   color: var(--forest-deep);
   font-family: 'Work Sans', -apple-system, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -75,17 +77,18 @@ img { max-width: 100%; display: block; }
   z-index: 20;
   background: rgba(242, 237, 225, 0.94);
   backdrop-filter: blur(8px);
-  border-bottom: 3px solid var(--forest);
+  border-bottom: 2px solid var(--forest);
 }
 
 .site-nav::after {
   content: '';
   display: block;
-  height: 6px;
-  background-image: radial-gradient(circle, var(--rust) 2.5px, transparent 2.6px);
-  background-size: 22px 6px;
+  height: 5px;
+  background-image: radial-gradient(circle, var(--rust) 2px, transparent 2.1px);
+  background-size: 20px 5px;
   background-position: 10px center;
   background-repeat: repeat-x;
+  opacity: 0.85;
 }
 
 .site-nav .wrap {
@@ -115,6 +118,12 @@ img { max-width: 100%; display: block; }
   font-weight: 700;
   color: var(--cream);
   flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(193, 101, 43, 0.18);
+  transition: box-shadow 0.25s ease;
+}
+
+.brand:hover .brand-mark {
+  box-shadow: 0 0 0 4px rgba(193, 101, 43, 0.3);
 }
 
 .brand-name {
@@ -201,7 +210,7 @@ img { max-width: 100%; display: block; }
 
 .footer-links {
   display: flex;
-  gap: 20px;
+  gap: 22px;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -212,6 +221,16 @@ img { max-width: 100%; display: block; }
   font-weight: 500;
   text-decoration: none;
   color: var(--walnut);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s ease;
+}
+
+.footer-links a svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
 }
 
 .footer-links a:hover { color: var(--rust-deep); }
@@ -298,10 +317,11 @@ img { max-width: 100%; display: block; }
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 9px;
+  padding: 13px 26px;
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   text-decoration: none;
   border-radius: 24px;
   transition: all 0.2s ease;
@@ -311,9 +331,14 @@ img { max-width: 100%; display: block; }
 .btn-primary {
   background: var(--forest);
   color: var(--cream);
+  box-shadow: 0 4px 0 var(--forest-deep);
 }
 
-.btn-primary:hover { background: var(--forest-deep); }
+.btn-primary:hover {
+  background: var(--forest-deep);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--forest-deep);
+}
 
 .btn-outline {
   border: 2px solid var(--forest);
@@ -380,11 +405,12 @@ section.block:not(:last-of-type)::after {
   background: var(--cream-raised);
   border: 2px solid var(--hairline);
   border-radius: 16px;
-  padding: 28px;
+  padding: 30px 28px 28px;
   display: flex;
   flex-direction: column;
   gap: 14px;
   overflow: hidden;
+  box-shadow: 0 2px 0 rgba(31, 51, 42, 0.04);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -403,7 +429,29 @@ section.block:not(:last-of-type)::after {
 .card:hover {
   border-color: var(--forest);
   transform: translateY(-4px);
-  box-shadow: 0 16px 30px -20px rgba(31, 51, 42, 0.4);
+  box-shadow: 0 18px 32px -20px rgba(31, 51, 42, 0.45);
+}
+
+.card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--rust);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.card:nth-child(2n) .card-icon {
+  background: var(--forest);
+}
+
+.card-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: var(--cream);
+  color: var(--cream);
 }
 
 .card .eyebrow { margin-bottom: 2px; }
@@ -534,11 +582,22 @@ section.block:not(:last-of-type)::after {
   font-size: 13.5px;
   font-weight: 600;
   color: var(--forest-deep);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.skill-pill:hover {
+  background: var(--forest);
+  color: var(--cream);
 }
 
 .skill-pill.cert {
   border-color: var(--rust);
   color: var(--rust-deep);
+}
+
+.skill-pill.cert:hover {
+  background: var(--rust);
+  color: var(--cream);
 }
 
 /* ---------- Doc placeholders ---------- */
