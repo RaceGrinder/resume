@@ -259,14 +259,17 @@ function updateLogoColor() {
 }
 
 function fetchLeaderboard() {
-  fetch(GOOGLE_SCRIPT_URL, { method: "GET" })
-    .then(response => response.text())
-    .then(text => JSON.parse(text))
+  fetch(SCRIPT_URL)
+    .then(response => response.json())
     .then(data => {
-      if (!Array.isArray(data)) {
-        console.error("Error: Data is not an array", data);
-        return;
+      if (Array.isArray(data)) {
+        updateLeaderboard(data);
       }
+    })
+    .catch(error => {
+      console.error("Error loading leaderboard:", error);
+    });
+}
       updateLeaderboard(data);
     })
     .catch(error => console.error("Error loading leaderboard:", error));
@@ -436,15 +439,19 @@ function loop() {
 }
 
 function saveLog(playerName, score) {
-  if (!playerName || isNaN(score)) {
-    return;
-  }
-  const logEntry = { player: playerName, score: score };
-  fetch("https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec", {
+  if (!playerName || isNaN(score)) return;
+
+  const logEntry = { player: playerName, score: Number(score) };
+
+  // Use text/plain to avoid CORS preflight (OPTIONS) requests
+  fetch(SCRIPT_URL, {
     method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(logEntry)
+  })
+  .then(() => {
+    // Refresh the leaderboard to show the new score
+    fetchLeaderboard();
   })
   .catch(error => console.error("Error saving score:", error));
 }
