@@ -226,13 +226,13 @@ const canvas = document.getElementById('game');
 const nextCanvas = document.getElementById('next-canvas');
 const context = canvas.getContext('2d');
 const nextContext = nextCanvas.getContext('2d');
-const GOOGLE_SCRIPT_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";
-const PROXY_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";  // Cloudflare CORS proxy
-const FULL_URL = "https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";  // I made this in highschool and cant remember why there are three links that all go to the same place
+const FULL_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";
 
 const grid = 32;
 let score = 0;
-let speed = 35; // Initial speed threshold; lower means faster drop.
+let speed = 35;
 let count = 0;
 let rAF = null;
 let gameOver = false;
