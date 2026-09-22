@@ -440,7 +440,7 @@ function saveLog(playerName, score) {
     return;
   }
   const logEntry = { player: playerName, score: score };
-  fetch("https://logs.tetris.my/?url=https://script.google.com/macros/s/AKfycbzk-PsMsbDxThPpomsxpm9OW9bW1Ws4tTzOQb_EzUAIdU-5nWdokQOPtV2fmdnAUnAS8A/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec", {
     method: "POST",
     mode: "no-cors",
     headers: { "Content-Type": "application/json" },
