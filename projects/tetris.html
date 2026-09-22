@@ -10,7 +10,6 @@
       background: black;
       overflow: hidden;
       position: relative;
-      /* Removed the previous full-page white border */
     }
     body {
       display: flex;
@@ -49,11 +48,11 @@
       display: flex;
       flex-direction: row;
       align-items: center;
-      border: 1px solid white; /* Thin white border */
+      border: 1px solid white;
     }
     canvas {
       border: 1px solid white;
-      background: black; /* Opaque play area */
+      background: black;
     }
     #sidebar {
       display: flex;
@@ -131,14 +130,15 @@
     #game-over-menu {
       position: absolute;
       top: 50%;
-      left: -100%;
+      left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid white;
       padding: 20px;
       border-radius: 10px;
       text-align: center;
       display: none;
-      z-index: 3;
+      z-index: 5;
     }
     /* Pause overlay screen */
     #pause-screen {
@@ -146,7 +146,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.85);
       padding: 20px;
       border: 1px solid white;
       border-radius: 10px;
@@ -183,13 +183,12 @@
 <div id="play-area">
   <canvas width="320" height="640" id="game"></canvas>
   <div id="sidebar">
-    <div id="score">Score: </div>
+    <div id="score">Score: 0</div>
     <div id="next">Next Piece:</div>
     <canvas width="160" height="160" id="next-canvas"></canvas>
 
     <div id="game-over-menu">
-      <div id="logs" style="display: none;"></div>
-      <h2 style="color: white; font-family: monospace;">Game Over</h2>
+      <h2 style="color: white; font-family: monospace; margin-top: 0;">Game Over</h2>
       <p style="color: white; font-family: monospace;">Enter your name to restart:</p>
       <input type="text" id="player-name" placeholder="Your Name" style="
         padding: 10px;
@@ -208,7 +207,7 @@
 
     <div id="leaderboard">
       <h3 style="color: white;">Leaderboard</h3>
-      <ul id="leaderboard-list" style="color: white;"></ul>
+      <ul id="leaderboard-list" style="color: white; padding-left: 20px; text-align: left;"></ul>
     </div>
   </div>
 </div>
@@ -226,9 +225,9 @@ const canvas = document.getElementById('game');
 const nextCanvas = document.getElementById('next-canvas');
 const context = canvas.getContext('2d');
 const nextContext = nextCanvas.getContext('2d');
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";
-const PROXY_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";  // I made this in highschool and cant remember why there are three links that all go to the same place
-const FULL_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";
+
+// Consolidated single Google Apps Script endpoint URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3oiKdMf28Ck5EowiYJFcvX3tVPlaEGGz3MZrxzNzoO3ducHGqEyAycx9Ec9K9YOmSyg/exec";
 
 const grid = 32;
 let score = 0;
@@ -255,7 +254,9 @@ const colors = { 'I': 'cyan', 'O': 'yellow', 'T': 'purple', 'S': 'green', 'Z': '
 
 function updateLogoColor() {
   const logoLink = document.querySelector('#logo a');
-  logoLink.style.color = colors[tetromino.name];
+  if (logoLink && tetromino && colors[tetromino.name]) {
+    logoLink.style.color = colors[tetromino.name];
+  }
 }
 
 function fetchLeaderboard() {
@@ -270,18 +271,6 @@ function fetchLeaderboard() {
       console.error("Error loading leaderboard:", error);
     });
 }
-      updateLeaderboard(data);
-    })
-    .catch(error => console.error("Error loading leaderboard:", error));
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-  updateLeaderboard([
-    ["You are not connected to the internet.", 0],
-    ["The Database in not reachable.", 0]
-  ]);
-  fetchLeaderboard();
-});
 
 function updateLeaderboard(data) {
   const leaderboardList = document.getElementById("leaderboard-list");
@@ -293,14 +282,19 @@ function updateLeaderboard(data) {
   data.sort((a, b) => b[1] - a[1]);
   const topScores = data.slice(0, 10);
   topScores.forEach((entry, index) => {
-    if (entry.length < 2) {
-      return;
-    }
+    if (entry.length < 2) return;
     let listItem = document.createElement("li");
     listItem.textContent = `#${index + 1} ${entry[0]} - ${entry[1]} points`;
     leaderboardList.appendChild(listItem);
   });
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+  updateLeaderboard([
+    ["Loading leaderboard...", 0]
+  ]);
+  fetchLeaderboard();
+});
 
 function getNextTetromino() {
   const keys = Object.keys(tetrominos);
@@ -380,7 +374,7 @@ function placeTetromino() {
   for (let row = 0; row < tetromino.matrix.length; row++) {
     for (let col = 0; col < tetromino.matrix[row].length; col++) {
       if (tetromino.matrix[row][col]) {
-        if (tetromino.row + row === 0) {
+        if (tetromino.row + row <= 0) {
           return showGameOver();
         }
         playfield[tetromino.row + row][tetromino.col + col] = tetromino.name;
@@ -388,15 +382,15 @@ function placeTetromino() {
     }
   }
   
-  // Check for full lines, remove them, and add an empty row at the top.
+  // Check for full lines, remove them, and add an empty row at the top
   for (let row = playfield.length - 1; row >= 0; row--) {
     if (playfield[row].every(cell => !!cell)) {
       score += 15;
       updateScoreDisplay();
       speed = Math.max(5, 35 - Math.floor(score / 80));
-      playfield.splice(row, 1);             // Remove the full row
-      playfield.unshift(new Array(10).fill(0)); // Add an empty row at the top
-      row++; // Re-check current row index after shifting
+      playfield.splice(row, 1);
+      playfield.unshift(new Array(10).fill(0));
+      row++;
     }
   }
   
@@ -414,10 +408,6 @@ function showGameOver() {
   cancelAnimationFrame(rAF);
   gameOver = true;
   document.getElementById('game-over-menu').style.display = 'block';
-  const playerName = document.getElementById('player-name').value.trim();
-  if (playerName) {
-    saveLog(playerName, score);
-  }
 }
 
 function loop() {
@@ -443,34 +433,39 @@ function saveLog(playerName, score) {
 
   const logEntry = { player: playerName, score: Number(score) };
 
-  // Use text/plain to avoid CORS preflight (OPTIONS) requests
   fetch(SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(logEntry)
   })
   .then(() => {
-    // Refresh the leaderboard to show the new score
     fetchLeaderboard();
   })
   .catch(error => console.error("Error saving score:", error));
 }
 
-document.getElementById('restart-button').addEventListener('click', function() {
-  document.getElementById('game-over-menu').style.display = 'none';
-});
-
 function restartGame() {
-  if (!gameOver) return;
-  saveLog(document.getElementById('player-name').value.trim(), score);
+  const nameInput = document.getElementById('player-name');
+  const playerName = nameInput.value.trim();
+  if (playerName) {
+    saveLog(playerName, score);
+  }
+  
   gameOver = false;
   score = 0;
+  speed = 35;
+  count = 0;
   updateScoreDisplay();
   playfield.forEach(row => row.fill(0));
   tetromino = getNextTetromino();
   nextTetromino = getNextTetromino();
+  drawNextPiece();
+  
   document.getElementById('game-over-menu').style.display = 'none';
-  document.getElementById('player-name').value = '';
+  nameInput.value = '';
+  document.getElementById('restart-button').disabled = true;
+  document.getElementById('restart-button').style.cursor = 'not-allowed';
+  
   rAF = requestAnimationFrame(loop);
 }
 
@@ -488,12 +483,11 @@ document.getElementById('player-name').addEventListener('input', function() {
   }
 });
 
-// Modified keydown listener to support WASD keys along with arrow keys.
+// Controls (WASD + Arrow keys)
 document.addEventListener('keydown', function(e) {
   if (gameOver || paused) return;
   
   let key = e.key;
-  // Map WASD (in both lower and upper case) to corresponding arrow keys.
   if (key === 'w' || key === 'W') key = 'ArrowUp';
   if (key === 'a' || key === 'A') key = 'ArrowLeft';
   if (key === 's' || key === 'S') key = 'ArrowDown';
@@ -524,7 +518,7 @@ document.addEventListener('keydown', function(e) {
 
 // Pause and Resume functions
 function pauseGame() {
-  if (paused) return;
+  if (paused || gameOver) return;
   paused = true;
   cancelAnimationFrame(rAF);
   document.getElementById('pause-screen').style.display = 'block';
@@ -539,7 +533,8 @@ function resumeGame() {
 document.getElementById('pause-button').addEventListener('click', pauseGame);
 document.getElementById('resume-button').addEventListener('click', resumeGame);
 
-// Start the game loop
+// Initial setup
+drawNextPiece();
 rAF = requestAnimationFrame(loop);
 
 /* ------------ Falling Testimonials Background ------------ */
@@ -564,21 +559,16 @@ const testimonialsData = [
 const tetrisColors = ['cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'];
 const testimonialsContainer = document.getElementById('testimonials');
 
-// Limit to 16 testimonials
 const maxTestimonials = 16;
 testimonialsData.slice(0, maxTestimonials).forEach(text => {
   const testimonial = document.createElement('div');
   testimonial.className = 'testimonial';
   testimonial.textContent = text;
-  // Random horizontal and vertical positions across the screen
   testimonial.style.left = Math.random() * 100 + '%';
   testimonial.style.top = Math.random() * 100 + '%';
-  // Random animation duration between 10 and 30 seconds
   const duration = 10 + Math.random() * 20;
   testimonial.style.animationDuration = duration + 's';
-  // Random animation delay so they start at different times
   testimonial.style.animationDelay = -(Math.random() * duration) + 's';
-  // Random testimonial color from Tetris colors
   testimonial.style.color = tetrisColors[Math.floor(Math.random() * tetrisColors.length)];
   testimonialsContainer.appendChild(testimonial);
 });
