@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Call — Race Grinder</title>
+<meta name="description" content="Pick an open time to schedule a call with Race Grinder.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a href="index.html" class="brand">
+      <span class="brand-mark">RG</span>
+      <span class="brand-name">Race Grinder</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="resume.html">Resume</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="schedule.html" class="active">Book a Call</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" style="padding-bottom: 48px;">
+  <div class="hero-watermark" aria-hidden="true">
+    <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="150" cy="150" r="140" fill="none" stroke="#2F4A3C" stroke-opacity="0.10" stroke-width="2"/>
+      <circle cx="150" cy="150" r="100" fill="none" stroke="#2F4A3C" stroke-opacity="0.14" stroke-width="2"/>
+      <circle cx="150" cy="150" r="60" fill="#C1652B" fill-opacity="0.16"/>
+      <circle cx="150" cy="150" r="14" fill="#C1652B" fill-opacity="0.35"/>
+    </svg>
+  </div>
+  <div class="wrap">
+    <span class="eyebrow">Book a Call</span>
+    <h1 style="font-size: clamp(32px, 5vw, 44px);">Let&rsquo;s Talk</h1>
+    <p class="bio">Pick a time that works for you. Only open times on my calendar are
+      shown, so whatever you choose, I&rsquo;m free.</p>
+  </div>
+</header>
+
+<!-- Shown only when Race opens the "add to calendar" link from a booking email -->
+<section class="block" id="owner-add" hidden>
+  <div class="wrap">
+    <div class="booker">
+      <div class="booker-body">
+        <span class="lap-badge">New Booking</span>
+        <h2 class="booker-title" id="owner-add-title">Add this call to your calendar</h2>
+        <p class="booker-note" id="owner-add-detail"></p>
+        <div class="hero-actions" style="margin-top: 20px;">
+          <a href="#" class="btn btn-primary" id="owner-add-btn">Add to Calendar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="booking">
+  <div class="wrap">
+
+    <div class="contact-grid booking-meta">
+      <div class="contact-item">
+        <span class="eyebrow">Length</span>
+        <span>30 minutes</span>
+      </div>
+      <div class="contact-item">
+        <span class="eyebrow">Format</span>
+        <span>Phone or video</span>
+      </div>
+      <div class="contact-item">
+        <span class="eyebrow">Hours</span>
+        <span>Weekdays, 10&ndash;6 ET</span>
+      </div>
+    </div>
+
+    <div class="booker" id="booker">
+      <div class="booker-body">
+
+        <!-- Step 1: day + time -->
+        <div id="step-pick">
+          <div class="booker-head">
+            <div>
+              <span class="lap-badge">Step 01</span>
+              <h2 class="booker-title" id="week-label">Choose a day</h2>
+            </div>
+            <div class="week-nav">
+              <button type="button" class="icon-btn" id="prev-week" aria-label="Previous week">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+              <button type="button" class="icon-btn" id="next-week" aria-label="Next week">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="day-strip" id="day-strip" role="group" aria-label="Days"></div>
+
+          <div class="slot-area">
+            <p class="booker-note" id="slot-heading">Loading open times&hellip;</p>
+            <div class="slot-grid" id="slot-grid" role="group" aria-label="Open times"></div>
+          </div>
+
+          <p class="tz-note" id="tz-note"></p>
+        </div>
+
+        <!-- Step 2: details -->
+        <form id="step-details" hidden novalidate>
+          <div class="booker-head">
+            <div>
+              <span class="lap-badge">Step 02</span>
+              <h2 class="booker-title">Your details</h2>
+            </div>
+            <button type="button" class="btn btn-ghost back-link" id="change-time">Change time</button>
+          </div>
+
+          <div class="picked" id="picked-summary"></div>
+
+          <div class="field-grid">
+            <label class="field">
+              <span class="eyebrow">Name</span>
+              <input type="text" name="name" id="f-name" autocomplete="name" required>
+            </label>
+            <label class="field">
+              <span class="eyebrow">Email</span>
+              <input type="email" name="email" id="f-email" autocomplete="email" required>
+            </label>
+            <label class="field">
+              <span class="eyebrow">How should we connect?</span>
+              <select name="format" id="f-format">
+                <option value="Phone call">Phone call</option>
+                <option value="Video call">Video call (I&rsquo;ll send a link)</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="eyebrow">Phone <em class="optional">for phone calls</em></span>
+              <input type="tel" name="phone" id="f-phone" autocomplete="tel">
+            </label>
+            <label class="field field-wide">
+              <span class="eyebrow">What would you like to talk about?</span>
+              <textarea name="topic" id="f-topic" rows="4" maxlength="600"></textarea>
+            </label>
+            <!-- spam trap: real people never see this -->
+            <input type="text" name="_honey" id="f-honey" class="trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+          </div>
+
+          <p class="form-error" id="form-error" role="alert" hidden></p>
+
+          <div class="hero-actions" style="margin-top: 24px;">
+            <button type="submit" class="btn btn-primary" id="submit-btn">Confirm Booking</button>
+          </div>
+        </form>
+
+        <!-- Step 3: done -->
+        <div id="step-done" hidden>
+          <span class="lap-badge">Booked</span>
+          <h2 class="booker-title">You&rsquo;re on my calendar</h2>
+          <p class="done-when" id="done-when"></p>
+          <p class="booker-note">I&rsquo;ve been notified and will follow up by email to
+            confirm. Add the call to your own calendar so it doesn&rsquo;t slip.</p>
+          <div class="hero-actions" style="margin-top: 22px;">
+            <a href="#" class="btn btn-primary" id="done-ics">Add to Calendar</a>
+            <a href="#" class="btn btn-outline" id="done-gcal" target="_blank" rel="noopener">Google Calendar</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>&copy; 2026 Race Grinder</p>
+    <ul class="footer-links">
+      <li><a href="mailto:grindere@mail.uc.edu"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>Email</a></li>
+      <li><a href="https://linkedin.com/in/racegrinder" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4V8h4v1.5A5 5 0 0 1 16 8Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn</a></li>
+      <li><a href="index.html">Home</a></li>
+    </ul>
+  </div>
+</footer>
+
+<script src="schedule.js"></script>
+</body>
+</html>

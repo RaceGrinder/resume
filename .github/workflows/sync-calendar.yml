@@ -1,0 +1,43 @@
+name: Sync calendar busy times
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes (GitHub may run it a few minutes late)
+  workflow_dispatch:          # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-calendar
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install parser
+        run: pip install icalendar recurring-ical-events
+
+      - name: Build busy.json from iCloud
+        env:
+          ICAL_URLS: ${{ secrets.ICAL_URLS }}
+        run: python scripts/sync_busy.py
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- busy.json; then
+            echo "busy.json unchanged"
+            exit 0
+          fi
+          git config user.name "calendar-sync"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add busy.json
+          git commit -m "Update busy times"
+          git push
