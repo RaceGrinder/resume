@@ -7,7 +7,7 @@
 const CONFIG = {
   ownerName: 'Race Grinder',
   notifyEmail: 'grindere@mail.uc.edu',  // where booking emails go (via FormSubmit)
-  zoomLink: '',                         // your Zoom personal meeting link
+  zoomLink: 'https://us05web.zoom.us/j/9971995904?pwd=f8MImV4oOPYJw6KvABnbKb7QRmWbOp.1',                         // your Zoom personal meeting link
 
   homeTz: 'America/New_York',
   workDays: [1, 2, 3, 4, 5],            // Mon–Fri
