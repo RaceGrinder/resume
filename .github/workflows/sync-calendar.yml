@@ -27,7 +27,7 @@ jobs:
 
       - name: Build busy.json from iCloud
         env:
-          ICAL_URLS: ${{ secrets.ICAL_URLS }}
+          ICAL_URLS: ${{ secrets.ICAL_URLS || vars.ICAL_URLS }}
         run: python scripts/sync_busy.py
 
       - name: Commit if changed
