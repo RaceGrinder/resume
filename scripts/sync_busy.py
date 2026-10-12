@@ -12,6 +12,7 @@ from iCloud's "Public Calendar" share are accepted as-is.
 import json
 import os
 import sys
+import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -28,7 +29,7 @@ def fetch(url: str) -> bytes:
     url = url.strip()
     if url.startswith("webcal://"):
         url = "https://" + url[len("webcal://"):]
-    req = urllib.request.Request(url, headers={"User-Agent": "resume-busy-sync"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; calendar-sync)"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read()
 
@@ -75,17 +76,35 @@ def merge(blocks):
     return merged
 
 
+def fail(msg: str):
+    # ::error:: shows up as a run annotation, readable without the full logs
+    print(f"::error::{msg}")
+    sys.exit(1)
+
+
 def main():
-    urls = [u for u in os.environ.get("ICAL_URLS", "").splitlines() if u.strip()]
+    raw = os.environ.get("ICAL_URLS", "")
+    urls = [u.strip() for u in raw.replace(",", "\n").split() if u.strip()]
     if not urls:
-        sys.exit("ICAL_URLS secret is not set")
+        fail("ICAL_URLS secret is empty or missing")
 
     now = datetime.now(timezone.utc)
     window_end = now + timedelta(days=DAYS_AHEAD)
     blocks = []
-    for url in urls:
-        cal = icalendar.Calendar.from_ical(fetch(url))
-        blocks.extend(busy_blocks(cal, now - timedelta(days=1), window_end))
+    for i, url in enumerate(urls, 1):
+        host = urllib.parse.urlsplit(url.replace("webcal://", "https://")).hostname
+        label = f"calendar {i} of {len(urls)} ({host})"
+        try:
+            data = fetch(url)
+        except Exception as exc:
+            fail(f"{label}: download failed: {type(exc).__name__}: {exc}")
+        try:
+            cal = icalendar.Calendar.from_ical(data)
+            found = list(busy_blocks(cal, now - timedelta(days=1), window_end))
+        except Exception as exc:
+            fail(f"{label}: could not read calendar: {type(exc).__name__}: {exc}")
+        print(f"{label}: {len(found)} events")
+        blocks.extend(found)
 
     fmt = lambda d: d.strftime("%Y-%m-%dT%H:%M:%SZ")
     busy = [{"start": fmt(s), "end": fmt(e)} for s, e in merge(blocks) if e > now]
