@@ -36,8 +36,7 @@
   <div class="wrap">
     <span class="eyebrow">Book a Call</span>
     <h1 style="font-size: clamp(32px, 5vw, 44px);">Let&rsquo;s Talk</h1>
-    <p class="bio">Pick a time that works for you. Only open times on my calendar are
-      shown, so whatever you choose, I&rsquo;m free.</p>
+    <p class="bio">Pick a time that works for you.</p>
   </div>
 </header>
 
@@ -59,21 +58,6 @@
 
 <section class="block" id="booking">
   <div class="wrap">
-
-    <div class="contact-grid booking-meta">
-      <div class="contact-item">
-        <span class="eyebrow">Length</span>
-        <span>30 minutes</span>
-      </div>
-      <div class="contact-item">
-        <span class="eyebrow">Format</span>
-        <span>Phone or video</span>
-      </div>
-      <div class="contact-item">
-        <span class="eyebrow">Hours</span>
-        <span>Weekdays, 10&ndash;6 ET</span>
-      </div>
-    </div>
 
     <div class="booker" id="booker">
       <div class="booker-body">
@@ -126,17 +110,6 @@
               <span class="eyebrow">Email</span>
               <input type="email" name="email" id="f-email" autocomplete="email" required>
             </label>
-            <label class="field">
-              <span class="eyebrow">How should we connect?</span>
-              <select name="format" id="f-format">
-                <option value="Phone call">Phone call</option>
-                <option value="Video call">Video call (I&rsquo;ll send a link)</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="eyebrow">Phone <em class="optional">for phone calls</em></span>
-              <input type="tel" name="phone" id="f-phone" autocomplete="tel">
-            </label>
             <label class="field field-wide">
               <span class="eyebrow">What would you like to talk about?</span>
               <textarea name="topic" id="f-topic" rows="4" maxlength="600"></textarea>
@@ -155,10 +128,13 @@
         <!-- Step 3: done -->
         <div id="step-done" hidden>
           <span class="lap-badge">Booked</span>
-          <h2 class="booker-title">You&rsquo;re on my calendar</h2>
+          <h2 class="booker-title">You&rsquo;re booked</h2>
           <p class="done-when" id="done-when"></p>
-          <p class="booker-note">I&rsquo;ve been notified and will follow up by email to
-            confirm. Add the call to your own calendar so it doesn&rsquo;t slip.</p>
+          <a class="zoom-row" id="done-zoom" href="#" target="_blank" rel="noopener" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10.5l6-3.5v10l-6-3.5"/></svg>
+            <span>Join on Zoom</span>
+          </a>
+          <p class="booker-note" id="done-zoom-note" hidden>The Zoom link is also in the calendar invite.</p>
           <div class="hero-actions" style="margin-top: 22px;">
             <a href="#" class="btn btn-primary" id="done-ics">Add to Calendar</a>
             <a href="#" class="btn btn-outline" id="done-gcal" target="_blank" rel="noopener">Google Calendar</a>

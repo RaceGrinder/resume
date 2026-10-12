@@ -671,8 +671,6 @@ section.block:not(:last-of-type)::after {
 .contact-item a:hover { color: var(--rust-deep); }
 
 /* ---------- Book a Call ---------- */
-.booking-meta { margin-bottom: 40px; }
-
 .booker {
   position: relative;
   background: var(--cream-raised);
@@ -893,6 +891,27 @@ button.btn:disabled { opacity: 0.6; cursor: default; }
   font-weight: 600;
   color: var(--rust-deep);
 }
+
+.zoom-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+  padding: 10px 18px;
+  border-radius: 24px;
+  background: rgba(47, 74, 60, 0.08);
+  color: var(--forest-deep);
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 14.5px;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.zoom-row[hidden] { display: none; }
+.zoom-row svg { width: 20px; height: 20px; stroke: currentColor; }
+.zoom-row:hover { background: rgba(47, 74, 60, 0.16); }
+#step-done .booker-note { margin-top: 2px; }
 
 #owner-add { padding-bottom: 0; }
 #owner-add::after { display: none; }

@@ -7,6 +7,8 @@
 const CONFIG = {
   ownerName: 'Race Grinder',
   notifyEmail: 'grindere@mail.uc.edu',  // where booking emails go (via FormSubmit)
+  zoomLink: '',                         // your Zoom personal meeting link
+
   homeTz: 'America/New_York',
   workDays: [1, 2, 3, 4, 5],            // Mon–Fri
   startHour: 10,                        // 10:00 ET
@@ -220,7 +222,7 @@ function chooseSlot(slot) {
 const icsStamp = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
 const icsEscape = (s) => String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 
-function icsFile({ start, title, description }) {
+function icsFile({ start, title, description, location = CONFIG.zoomLink }) {
   const end = new Date(start.getTime() + CONFIG.slotMinutes * 60000);
   const body = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Race Grinder//Book a Call//EN', 'METHOD:PUBLISH',
@@ -231,6 +233,7 @@ function icsFile({ start, title, description }) {
     `DTEND:${icsStamp(end)}`,
     `SUMMARY:${icsEscape(title)}`,
     `DESCRIPTION:${icsEscape(description)}`,
+    ...(location ? [`LOCATION:${icsEscape(location)}`, `URL:${location}`] : []),
     'BEGIN:VALARM', 'TRIGGER:-PT15M', 'ACTION:DISPLAY', 'DESCRIPTION:Reminder', 'END:VALARM',
     'END:VEVENT', 'END:VCALENDAR'
   ].join('\r\n');
@@ -240,6 +243,7 @@ function icsFile({ start, title, description }) {
 function gcalLink(start, title, details) {
   const end = new Date(start.getTime() + CONFIG.slotMinutes * 60000);
   const q = new URLSearchParams({ action: 'TEMPLATE', text: title, dates: `${icsStamp(start)}/${icsStamp(end)}`, details });
+  if (CONFIG.zoomLink) q.set('location', CONFIG.zoomLink);
   return `https://calendar.google.com/calendar/render?${q}`;
 }
 
@@ -265,18 +269,11 @@ async function submitBooking(e) {
   e.preventDefault();
   const name = $('f-name').value.trim();
   const email = $('f-email').value.trim();
-  const phone = $('f-phone').value.trim();
-  const format = $('f-format').value;
   const topic = $('f-topic').value.trim();
   const err = $('form-error');
 
   if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     err.textContent = 'Please add your name and a valid email.';
-    err.hidden = false;
-    return;
-  }
-  if (format === 'Phone call' && !phone) {
-    err.textContent = 'Add a phone number so I know where to call.';
     err.hidden = false;
     return;
   }
@@ -290,7 +287,7 @@ async function submitBooking(e) {
   // Bots fill the hidden field; quietly "succeed" without sending anything
   if ($('f-honey').value) { showDone(slot); return; }
 
-  const addLink = ownerAddLink({ s: slot.toISOString(), n: name, e: email, p: phone, f: format, t: topic.slice(0, 300) });
+  const addLink = ownerAddLink({ s: slot.toISOString(), n: name, e: email, t: topic.slice(0, 300) });
   const whenEt = whenText(slot, CONFIG.homeTz);
   const payload = {
     _subject: `New call booked: ${name} — ${whenEt}`,
@@ -298,11 +295,10 @@ async function submitBooking(e) {
     _captcha: 'false',
     Name: name,
     email,
-    Phone: phone || '—',
-    Format: format,
     'When (Eastern)': whenEt,
     'When (their time)': visitorTz === CONFIG.homeTz ? 'Same' : whenText(slot, visitorTz),
     Topic: topic || '—',
+    ...(CONFIG.zoomLink ? { Zoom: CONFIG.zoomLink } : {}),
     'Add to your calendar': addLink
   };
 
@@ -318,7 +314,7 @@ async function submitBooking(e) {
     showDone(slot);
   } catch {
     const mail = `mailto:${CONFIG.notifyEmail}?subject=${encodeURIComponent(payload._subject)}` +
-      `&body=${encodeURIComponent(`Hi Race,\n\nI'd like to book ${whenEt}.\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\nFormat: ${format}\nTopic: ${topic}`)}`;
+      `&body=${encodeURIComponent(`Hi Race,\n\nI'd like to book ${whenEt}.\n\nName: ${name}\nEmail: ${email}\nTopic: ${topic}`)}`;
     err.innerHTML = `Something went wrong sending your booking. <a href="${mail}">Email it to me instead</a> and I&rsquo;ll lock it in.`;
     err.hidden = false;
     btn.disabled = false;
@@ -328,8 +324,17 @@ async function submitBooking(e) {
 
 function showDone(slot) {
   const title = `Call with ${CONFIG.ownerName}`;
-  const details = `30-minute call with ${CONFIG.ownerName}. Questions? ${CONFIG.notifyEmail}`;
+  const details = [
+    `30-minute Zoom call with ${CONFIG.ownerName}.`,
+    CONFIG.zoomLink ? `Join: ${CONFIG.zoomLink}` : '',
+    `Questions? ${CONFIG.notifyEmail}`
+  ].filter(Boolean).join('\n');
   $('done-when').textContent = whenText(slot, visitorTz);
+  if (CONFIG.zoomLink) {
+    $('done-zoom').href = CONFIG.zoomLink;
+    $('done-zoom').hidden = false;
+    $('done-zoom-note').hidden = false;
+  }
   const ics = $('done-ics');
   ics.href = icsFile({ start: slot, title, description: details });
   ics.download = 'call-with-race-grinder.ics';
@@ -346,12 +351,12 @@ function showOwnerAdd(info) {
   if (isNaN(start)) return;
   $('owner-add').hidden = false;
   $('owner-add-title').textContent = `Call with ${info.n}`;
-  $('owner-add-detail').textContent = `${whenText(start, CONFIG.homeTz)} · ${info.f || 'Call'}${info.p ? ` · ${info.p}` : ''}`;
+  $('owner-add-detail').textContent = `${whenText(start, CONFIG.homeTz)} · ${info.e}`;
   const btn = $('owner-add-btn');
   btn.href = icsFile({
     start,
     title: `Call with ${info.n}`,
-    description: [`${info.f || 'Call'} booked through racegrinder site`, `Email: ${info.e}`, info.p ? `Phone: ${info.p}` : '', info.t ? `Topic: ${info.t}` : ''].filter(Boolean).join('\n')
+    description: [`Booked through your site`, `Email: ${info.e}`, info.t ? `Topic: ${info.t}` : '', CONFIG.zoomLink ? `Zoom: ${CONFIG.zoomLink}` : ''].filter(Boolean).join('\n')
   });
   btn.download = `call-with-${String(info.n).toLowerCase().replace(/[^a-z0-9]+/g, '-')}.ics`;
 }
