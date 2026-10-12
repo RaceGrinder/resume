@@ -288,7 +288,7 @@ async function submitBooking(e) {
   // Bots fill the hidden field; quietly "succeed" without sending anything
   if ($('f-honey').value) { showDone(slot); return; }
 
-  const addLink = ownerAddLink({ s: slot.toISOString(), n: name, e: email, t: topic.slice(0, 300) });
+  const addLink = ownerAddLink({ s: slot.toISOString(), n: name, e: email, t: topic.slice(0, 300), z: visitorTz });
   const whenEt = whenText(slot, CONFIG.homeTz);
   const payload = {
     _subject: `New call booked: ${name} — ${whenEt}`,

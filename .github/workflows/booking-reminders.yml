@@ -1,0 +1,26 @@
+name: Booking reminders
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (GitHub may run it a few minutes late)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: booking-reminders
+  cancel-in-progress: false
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Send due reminders
+        env:
+          GMAIL_ADDRESS: racejgrinder@gmail.com
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python3 scripts/send_reminders.py

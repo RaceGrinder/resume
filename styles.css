@@ -874,6 +874,17 @@ section.block:not(:last-of-type)::after {
 
 .trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
+.form-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 0;
+  font-size: 14px;
+  color: var(--walnut);
+}
+
+.form-note svg { width: 18px; height: 18px; stroke: var(--rust); flex-shrink: 0; }
+
 .form-error {
   margin: 18px 0 0;
   color: var(--rust-deep);
