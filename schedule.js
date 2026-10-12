@@ -6,7 +6,8 @@
 
 const CONFIG = {
   ownerName: 'Race Grinder',
-  notifyEmail: 'grindere@mail.uc.edu',  // where booking emails go (via FormSubmit)
+  notifyEmail: 'racejgrinder@gmail.com', // where booking emails go (via FormSubmit)
+  contactEmail: 'grindere@mail.uc.edu', // shown to visitors
   zoomLink: 'https://us05web.zoom.us/j/9971995904?pwd=f8MImV4oOPYJw6KvABnbKb7QRmWbOp.1',                         // your Zoom personal meeting link
 
   homeTz: 'America/New_York',
@@ -327,7 +328,7 @@ function showDone(slot) {
   const details = [
     `30-minute Zoom call with ${CONFIG.ownerName}.`,
     CONFIG.zoomLink ? `Join: ${CONFIG.zoomLink}` : '',
-    `Questions? ${CONFIG.notifyEmail}`
+    `Questions? ${CONFIG.contactEmail}`
   ].filter(Boolean).join('\n');
   $('done-when').textContent = whenText(slot, visitorTz);
   if (CONFIG.zoomLink) {
@@ -379,7 +380,7 @@ async function init() {
     busy = (data.busy || []).map((b) => ({ start: Date.parse(b.start), end: Date.parse(b.end) }));
   } catch {
     $('slot-heading').innerHTML = `Couldn&rsquo;t load my availability right now. ` +
-      `<a href="mailto:${CONFIG.notifyEmail}">Email me</a> and we&rsquo;ll find a time.`;
+      `<a href="mailto:${CONFIG.contactEmail}">Email me</a> and we&rsquo;ll find a time.`;
     $('prev-week').disabled = $('next-week').disabled = true;
     return;
   }
